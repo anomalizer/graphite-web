@@ -21,6 +21,7 @@ from graphite.logger import log
 from graphite.storage import STORE
 from graphite.metrics.search import searcher
 from graphite.carbonlink import CarbonLink
+from graphite.koolstof.models import KoolstofMetricRegistry
 import fnmatch, os
 
 try:
@@ -44,6 +45,8 @@ def index_json(request):
     for filename in files:
       if filename == '.ceres-node':
         matches.append(root)
+
+  matches = matches + [x.name for x in KoolstofMetricRegistry.objects.raw('SELECT id,name from koolstof_metric_registry')]
 
   matches = [
     m
