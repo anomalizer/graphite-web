@@ -12,6 +12,7 @@ class KoolstofMetricRegistry(models.Model):
 
     class Meta:
         db_table = 'koolstof_metric_registry'
+        managed = False
 
 
 class KoolstofTimeseries(models.Model):
@@ -26,3 +27,4 @@ class KoolstofTimeseries(models.Model):
 
     class Meta:
         db_table = 'koolstof_timeseries'
+        managed = False
