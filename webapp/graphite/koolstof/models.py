@@ -36,5 +36,6 @@ class KoolstofFs(models.Model):
     depth = models.SmallIntegerField()
     path = models.CharField(max_length=-1)
     metric_registry = models.ForeignKey('KoolstofMetricRegistry', null=True, blank=True)
+    lastname = models.CharField(max_length=-1)
     class Meta:
         db_table = 'koolstof_fs'
