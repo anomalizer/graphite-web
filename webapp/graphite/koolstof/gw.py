@@ -1,7 +1,9 @@
 import fnmatch
 from graphite.node import BranchNode, LeafNode
+from graphite.intervals import Interval, IntervalSet
 from graphite.logger import log
-from graphite.koolstof.models import KoolstofFs
+
+from graphite.koolstof.models import KoolstofFs, KoolstofTimeseries
 
 
 class KoolstofFinder(object):
@@ -23,7 +25,8 @@ class KoolstofFinder(object):
                     reader = KoolstofReader(inode.metric_registry.id, parent_path)
                     yield LeafNode(parent_path, reader)
                 else:
-                    yield BranchNode(parent_path)
+                    if parent_path:  # special check for empty path
+                        yield BranchNode(parent_path)
         else:
             component = parts[current_level]
             new_path = '%s.%s' % (parent_path, component) if parent_path else component
@@ -49,7 +52,10 @@ class KoolstofReader(object):
         self.path = path
 
     def get_intervals(self):
-        pass
+        row = KoolstofTimeseries.objects.defer('measurements').get(pk=self.num_id)
+        end_time = row.tail_time
+        start_time = end_time - row.step_in_seconds * row.field_slots
+        return IntervalSet([Interval(start_time, end_time), ])
 
     def fetch(self, startTime, endTime):
         pass
