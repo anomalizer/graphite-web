@@ -28,3 +28,13 @@ class KoolstofTimeseries(models.Model):
     class Meta:
         db_table = 'koolstof_timeseries'
         managed = False
+
+
+class KoolstofFs(models.Model):
+    id = models.BigIntegerField(primary_key=True)
+    parent = models.ForeignKey(''self'')
+    depth = models.SmallIntegerField()
+    path = models.CharField(max_length=-1)
+    metric_registry = models.ForeignKey('KoolstofMetricRegistry', null=True, blank=True)
+    class Meta:
+        db_table = 'koolstof_fs'
