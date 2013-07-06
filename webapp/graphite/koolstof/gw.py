@@ -19,9 +19,18 @@ class KoolstofFinder(object):
                 yield parent_path  # TODO: leaf v/s branch
         else:
             component = parts[current_level]
+            new_path = '%s.%s' % (parent_path, component) if parent_path else component
+
             if '*' in component:
-                pass  # TODO :real impl
+                candidates = []
+                for x in KoolstofFs.objects.filter(parent__path=parent_path):
+                    f = x.lastname
+                    partial_path = '%s.%s' % (parent_path, f) if parent_path else f
+                    candidates.append(partial_path)
+
+                for y in fnmatch.filter(candidates, new_path):
+                    for z in self._find_nodes(parts, current_level + 1, y):
+                        yield z
             else:
-                new_path = '%s.%s' % (parent_path, component) if parent_path else component
                 for x in self._find_nodes(parts, current_level + 1, new_path):
                     yield x
