@@ -3,6 +3,7 @@ from graphite.node import BranchNode, LeafNode
 from graphite.logger import log
 from graphite.koolstof.models import KoolstofFs
 
+
 class KoolstofFinder(object):
     def __init__(self):
         pass
@@ -15,8 +16,14 @@ class KoolstofFinder(object):
     def _find_nodes(self, parts, current_level, parent_path):
 
         if len(parts) == current_level:
-            if KoolstofFs.objects.filter(path=parent_path):
-                yield parent_path  # TODO: leaf v/s branch
+            inodes = KoolstofFs.objects.filter(path=parent_path)
+            if inodes:
+                inode = inodes[0]
+                if inode.metric_registry:
+                    reader = KoolstofReader(inode.metric_registry.id, parent_path)
+                    yield LeafNode(parent_path, reader)
+                else:
+                    yield BranchNode(parent_path)
         else:
             component = parts[current_level]
             new_path = '%s.%s' % (parent_path, component) if parent_path else component
@@ -34,3 +41,18 @@ class KoolstofFinder(object):
             else:
                 for x in self._find_nodes(parts, current_level + 1, new_path):
                     yield x
+
+
+class KoolstofReader(object):
+    def __init__(self, metric_int_id, path):
+        self.num_id = metric_int_id
+        self.path = path
+
+    def get_intervals(self):
+        pass
+
+    def fetch(self, startTime, endTime):
+        pass
+
+    def __repr__(self):
+        return '<KoolstofReader[%x]: %s (%d)>' % (id(self), self.path, self.num_id)
