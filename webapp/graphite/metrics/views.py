@@ -46,7 +46,7 @@ def index_json(request):
       if filename == '.ceres-node':
         matches.append(root)
 
-  matches = matches + [x.name for x in KoolstofMetricRegistry.objects.raw('SELECT id,name from koolstof_metric_registry')]
+  matches = matches + [x.name for x in KoolstofMetricRegistry.objects.only('id', 'name').all()]
 
   matches = [
     m
