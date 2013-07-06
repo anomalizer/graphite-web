@@ -32,7 +32,7 @@ class KoolstofTimeseries(models.Model):
 
 class KoolstofFs(models.Model):
     id = models.BigIntegerField(primary_key=True)
-    parent = models.ForeignKey(''self'')
+    parent = models.ForeignKey('self')
     depth = models.SmallIntegerField()
     path = models.CharField(max_length=-1)
     metric_registry = models.ForeignKey('KoolstofMetricRegistry', null=True, blank=True)

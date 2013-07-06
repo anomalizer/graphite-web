@@ -1,7 +1,7 @@
 import fnmatch
 from graphite.node import BranchNode, LeafNode
 from graphite.logger import log
-
+from graphite.koolstof.models import KoolstofFs
 
 class KoolstofFinder(object):
     def __init__(self):
@@ -15,7 +15,8 @@ class KoolstofFinder(object):
     def _find_nodes(self, parts, current_level, parent_path):
 
         if len(parts) == current_level:
-            yield parent_path  # TODO: verify it exists
+            if KoolstofFs.objects.filter(path=parent_path):
+                yield parent_path  # TODO: leaf v/s branch
         else:
             component = parts[current_level]
             if '*' in component:
