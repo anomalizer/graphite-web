@@ -104,13 +104,16 @@ class KoolstofReader(object):
     def _array_fetch(self, v, r1, r2):
         s1 = r1[0]
         e1 = r1[1]
-        with connection.cursor() as cursor:
-            if r2:
-                s2 = r2[0]
-                e2 = r2[1]
-                cursor.execute("SELECT measurements[%s:%s], measurements[%s:%s] FROM koolstof_timeseries WHERE metric_registry_id = %s AND _version = %s",
-                    [s1, e1, s2, e2, self.num_id, v])
-            else:
-                cursor.execute("SELECT measurements[%s:%s] FROM koolstof_timeseries WHERE metric_registry_id = %s AND _version = %s",
-                    [s1, e1, self.num_id, v])
-            return cursor.fetchone()
+        for i in xrange(0, 3):
+            with connection.cursor() as cursor:
+                if r2:
+                    s2 = r2[0]
+                    e2 = r2[1]
+                    cursor.execute("SELECT measurements[%s:%s], measurements[%s:%s] FROM koolstof_timeseries WHERE metric_registry_id = %s AND _version = %s",
+                        [s1, e1, s2, e2, self.num_id, v])
+                else:
+                    cursor.execute("SELECT measurements[%s:%s] FROM koolstof_timeseries WHERE metric_registry_id = %s AND _version = %s",
+                        [s1, e1, self.num_id, v])
+                retval = cursor.fetchone()
+                if retval:
+                    return retval
