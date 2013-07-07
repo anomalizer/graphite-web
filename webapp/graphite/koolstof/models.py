@@ -1,7 +1,4 @@
 from django.db import models
-from djorm_pgarray.fields import ArrayField
-from djorm_expressions.models import ExpressionManager
-
 
 class KoolstofMetricRegistry(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -22,8 +19,6 @@ class KoolstofTimeseries(models.Model):
     field_version = models.IntegerField(db_column='_version')  # Field renamed because it started with '_'.
     tail_time = models.BigIntegerField()
     tail_ptr = models.IntegerField()
-    measurements = ArrayField(dbtype="int", dimension=1)
-    objects = ExpressionManager()
 
     class Meta:
         db_table = 'koolstof_timeseries'
@@ -39,3 +34,4 @@ class KoolstofFs(models.Model):
     lastname = models.CharField(max_length=-1)
     class Meta:
         db_table = 'koolstof_fs'
+        managed = False
