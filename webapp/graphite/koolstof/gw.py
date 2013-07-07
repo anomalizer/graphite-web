@@ -5,6 +5,7 @@ from graphite.logger import log
 
 from graphite.koolstof.models import KoolstofFs, KoolstofTimeseries
 
+from django.db import connection
 
 class KoolstofFinder(object):
     def __init__(self):
@@ -58,8 +59,8 @@ class KoolstofReader(object):
     def fetch(self, startTime, endTime):
         x = self._range()
         step = x['step']
-        eff_start = max(int(startTime) / step * step, x['start'])
-        eff_end = min(int(endTime) / step * step, x['end'])
+        eff_start = max(int(startTime / step) * step, x['start'])
+        eff_end = min(int(endTime / step) * step, x['end'])
 
         if(eff_end < x['start']):
             return  # requested end before available start
@@ -67,19 +68,23 @@ class KoolstofReader(object):
             return  # requested start ahead of available end
         else:
             time_info = (eff_start, eff_end, x['step'])
-            start_ptr = x['tail'] - ((x['end'] - eff_start) / x['slots'])
-            end_ptr = x['tail'] - ((x['end'] - eff_end) / x['slots'])
-            if start_ptr > 0:
-                if end_ptr > 0:
-                    pass
-            #  return (time_info, self._efetch(x))
+            start_ptr = x['tail'] - int( (x['end'] - eff_start) / step)
+            end_ptr = x['tail'] - int( (x['end'] - eff_end) / step)
+            with connection.cursor() as cursor:
+#                raise Exception('start index %d end index %d, start time %d, end time %d  -> %d %d' % (start_ptr, end_ptr, startTime, endTime, eff_start, eff_end))
+                if start_ptr > 0:
+                    if end_ptr > 0:
+                        cursor.execute("SELECT measurements[%s:%s] FROM koolstof_timeseries WHERE metric_registry_id = %s", [start_ptr, end_ptr, self.num_id])
+                        rs = cursor.fetchone()
+                        return (time_info, rs[0])
+                #  return (time_info, self._efetch(x))
             pass
 
     def __repr__(self):
         return '<KoolstofReader[%x]: %s (%d)>' % (id(self), self.path, self.num_id)
 
     def _range(self):
-        row = KoolstofTimeseries.objects.defer('measurements').get(pk=self.num_id)
+        row = KoolstofTimeseries.objects.get(pk=self.num_id)
         end_time = row.tail_time
         start_time = end_time - row.step_in_seconds * row.field_slots
         return {'start': start_time, 'end': end_time,
