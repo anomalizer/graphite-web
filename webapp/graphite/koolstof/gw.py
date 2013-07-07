@@ -74,20 +74,20 @@ class KoolstofReader(object):
                 log.metric_access('start index %d end index %d, start time %d, end time %d  -> %d %d' % (start_ptr, end_ptr, startTime, endTime, eff_start, eff_end))
                 if start_ptr > 0:
                     if end_ptr > 0:  # straight block
-                        return (time_info, self._array_fetch((start_ptr, end_ptr), None)[0])
+                        return (time_info, self._array_fetch(x['v'], (start_ptr, end_ptr), None)[0])
                     else:  #forward to finish, wrap from begin to adjusted end
                         end_ptr = x['slots'] + end_ptr
-                        res = self._array_fetch((start_ptr, x['slots']), (1, end_ptr))
+                        res = self._array_fetch(x['v'], (start_ptr, x['slots']), (1, end_ptr))
                         return (time_info, res[0] + res[1])
                 else:
                     if end_ptr > 0:  # adjusted forward to finish, wrap from begin to end
                         start_ptr = x['slots'] + start_ptr
-                        res = self._array_fetch((start_ptr, x['slots']), (1, end_ptr))
+                        res = self._array_fetch(x['v'], (start_ptr, x['slots']), (1, end_ptr))
                         return (time_info, res[0] + res[1])
                     else:  # straight block post dual adjustments
                         end_ptr = x['slots'] + end_ptr
                         start_ptr = x['slots'] + start_ptr
-                        return (time_info, self._array_fetch((start_ptr, end_ptr), None)[0])
+                        return (time_info, self._array_fetch(x['v'], (start_ptr, end_ptr), None)[0])
             pass
 
     def __repr__(self):
@@ -101,16 +101,16 @@ class KoolstofReader(object):
                 'step': row.step_in_seconds, 'v': row.field_version,
                 'slots': row.field_slots, 'tail': row.tail_ptr}
 
-    def _array_fetch(self, r1, r2):
+    def _array_fetch(self, v, r1, r2):
         s1 = r1[0]
         e1 = r1[1]
         with connection.cursor() as cursor:
             if r2:
                 s2 = r2[0]
                 e2 = r2[1]
-                cursor.execute("SELECT measurements[%s:%s], measurements[%s:%s] FROM koolstof_timeseries WHERE metric_registry_id = %s",
-                    [s1, e1, s2, e2, self.num_id])
+                cursor.execute("SELECT measurements[%s:%s], measurements[%s:%s] FROM koolstof_timeseries WHERE metric_registry_id = %s AND _version = %s",
+                    [s1, e1, s2, e2, self.num_id, v])
             else:
-                cursor.execute("SELECT measurements[%s:%s] FROM koolstof_timeseries WHERE metric_registry_id = %s",
-                    [s1, e1, self.num_id])
+                cursor.execute("SELECT measurements[%s:%s] FROM koolstof_timeseries WHERE metric_registry_id = %s AND _version = %s",
+                    [s1, e1, self.num_id, v])
             return cursor.fetchone()
