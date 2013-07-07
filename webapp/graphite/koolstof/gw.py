@@ -52,13 +52,31 @@ class KoolstofReader(object):
         self.path = path
 
     def get_intervals(self):
-        row = KoolstofTimeseries.objects.defer('measurements').get(pk=self.num_id)
-        end_time = row.tail_time
-        start_time = end_time - row.step_in_seconds * row.field_slots
-        return IntervalSet([Interval(start_time, end_time), ])
+        x = self._range()
+        return IntervalSet([Interval(x['start'], x['end']), ])
 
     def fetch(self, startTime, endTime):
-        pass
+        x = self._range()
+        step = x['step']
+        eff_start = max(int(startTime) / step * step, x['start'])
+        eff_end = min(int(endTime) / step * step, x['end'])
+
+        if(eff_end < x['start']):
+            pass  # requested end before available start
+        elif(eff_start > x['end']):
+            pass  # requested start ahead of available end
+        else:
+            time_info = (eff_start, eff_end, x['step'])
+            #  return (time_info, self._efetch(x))
+            pass
 
     def __repr__(self):
         return '<KoolstofReader[%x]: %s (%d)>' % (id(self), self.path, self.num_id)
+
+    def _range(self):
+        row = KoolstofTimeseries.objects.defer('measurements').get(pk=self.num_id)
+        end_time = row.tail_time
+        start_time = end_time - row.step_in_seconds * row.field_slots
+        return {'start': start_time, 'end': end_time,
+                'step': row.step_in_seconds, 'v': row.field_version,
+                'slots': row.field_slots, 'tail': row.tail_ptr}
