@@ -62,11 +62,16 @@ class KoolstofReader(object):
         eff_end = min(int(endTime) / step * step, x['end'])
 
         if(eff_end < x['start']):
-            pass  # requested end before available start
+            return  # requested end before available start
         elif(eff_start > x['end']):
-            pass  # requested start ahead of available end
+            return  # requested start ahead of available end
         else:
             time_info = (eff_start, eff_end, x['step'])
+            start_ptr = x['tail'] - ((x['end'] - eff_start) / x['slots'])
+            end_ptr = x['tail'] - ((x['end'] - eff_end) / x['slots'])
+            if start_ptr > 0:
+                if end_ptr > 0:
+                    pass
             #  return (time_info, self._efetch(x))
             pass
 
