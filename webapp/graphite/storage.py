@@ -7,7 +7,7 @@ from graphite.node import LeafNode
 from graphite.intervals import Interval, IntervalSet
 from graphite.readers import MultiReader
 from graphite.finders import CeresFinder, StandardFinder
-from graphite.koolstof.gw import KoolstofFinder
+from graphite.leveltsd.gw import LevelRpcFinder
 
 
 class Store:
@@ -151,6 +151,6 @@ class FindQuery:
 finders = [
   CeresFinder(settings.CERES_DIR),
   StandardFinder(settings.STANDARD_DIRS),
-  KoolstofFinder(),
+  LevelRpcFinder(settings.LEVEL_RPC_PATH)
 ]
 STORE = Store(finders, hosts=settings.CLUSTER_SERVERS)
