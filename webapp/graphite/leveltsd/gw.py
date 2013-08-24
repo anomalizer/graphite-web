@@ -58,8 +58,8 @@ class LevelRpcReader(object):
         client = _get_rpc_client(self.server)
         values = client.get_range_data(self.metric, startTime, endTime)
         if values:
-            ts = x[1] in for x in values
-            time_info = (x[0][0], x[-1][0], self.step_in_seconds)
+            ts = [x[1] for x in values]
+            time_info = (values[0][0], values[-1][0], self.step_in_seconds)
         else:
             time_info = (0, 0, self.step_in_seconds)
             ts = []
