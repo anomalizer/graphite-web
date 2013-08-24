@@ -58,29 +58,37 @@ class LevelRpcReader(object):
     def fetch(self, startTime, endTime):
         client = _get_rpc_client(self.server)
         values = client.get_range_data(self.metric, startTime, endTime)
+        real_start = self._rounder(startTime)
+        real_end = self._rounder(endTime)
         if values:
-            real_start = self._rounder(values[0][0])
-            real_end = self._rounder(values[-1][0])
             ts = []
 
             curr = real_start
-            it = iter(values)
-            x = None
+
+            ''' if scanner returns older data for some reason '''
+            while values and values[0][0] < real_start:
+                values = values.pop(0)
+
+            n = len(values)
+            i = 0
             ''' storage might have holes, we need to accomodate for it'''
             while curr <= real_end:
-                if x is None:
-                    x = it.next()
-                if curr == self._rounder(x[0]):
-                    ts.append(x[1])
-                    x = None
+                if i < n:
+                    x = values[i]
+                    this_t = self._rounder(x[0])
+                    if this_t == curr:
+                        ts.append(x[1])
+                        i = i + 1
+                    else:
+                        ts.append(None)
                 else:
                     ts.append(None)
                 curr = curr + self.step_in_seconds
 
             time_info = (real_start, real_end, self.step_in_seconds)
         else:
-            time_info = (0, 0, self.step_in_seconds)
-            ts = []
+            time_info = (real_start, real_end, self.step_in_seconds)
+            ts = [None for i in xrange((real_end - real_start)/self.step_in_seconds + 1)]
         return (time_info, ts)
 
     def __repr__(self):
