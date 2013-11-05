@@ -60,30 +60,12 @@ class LevelRpcReader(object):
         values = client.get_range_data(self.metric, startTime, endTime)
         real_start = self._rounder(startTime)
         real_end = self._rounder(endTime)
-        if values:
+        value_map = self._round_base_data(values)
+        if value_map:
             ts = []
 
-            curr = real_start
-
-            ''' if scanner returns older data for some reason '''
-            while values and values[0][0] < real_start:
-                values = values.pop(0)
-
-            n = len(values)
-            i = 0
-            ''' storage might have holes, we need to accomodate for it'''
-            while curr <= real_end:
-                if i < n:
-                    x = values[i]
-                    this_t = self._rounder(x[0])
-                    if this_t == curr:
-                        ts.append(x[1])
-                        i = i + 1
-                    else:
-                        ts.append(None)
-                else:
-                    ts.append(None)
-                curr = curr + self.step_in_seconds
+            for curr in xrange(real_start, real_end, self.step_in_seconds):
+                ts.append(value_map.get(curr, None))
 
             time_info = (real_start, real_end, self.step_in_seconds)
         else:
@@ -97,6 +79,12 @@ class LevelRpcReader(object):
     def _rounder(self, x):
         return int(x / self.step_in_seconds) * self.step_in_seconds
 
+    def _round_base_data(self, b):
+        retval = {}
+        for kv in b:
+            z = self._rounder(kv[0])
+            retval[z] = kv[1]
+        return retval
 
 def _get_rpc_client(server):
     return jsonrpclib.Server(server)
