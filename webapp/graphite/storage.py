@@ -151,6 +151,6 @@ class FindQuery:
 finders = [
   CeresFinder(settings.CERES_DIR),
   StandardFinder(settings.STANDARD_DIRS),
-  LevelRpcFinder(settings.LEVEL_RPC_PATH)
+  LevelRpcFinder(settings.LEVEL_RPC_PATH, settings.LEVEL_GO_MODE)
 ]
 STORE = Store(finders, hosts=settings.CLUSTER_SERVERS)
