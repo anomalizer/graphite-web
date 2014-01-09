@@ -235,6 +235,9 @@
 # This should usually match the value configured in Carbon
 #REPLICATION_FACTOR = 1
 
+LEVEL_RPC_PATH="http://localhost:2005"
+
+
 #####################################
 # Additional Django Settings #
 #####################################
