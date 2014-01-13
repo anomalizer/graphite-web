@@ -55,6 +55,7 @@ setup(
     'graphite.render',
     'graphite.version',
     'graphite.whitelist',
+    'graphite.leveltsd',
   ],
   package_data={'graphite' :
     ['templates/*', 'local_settings.py.example']},
