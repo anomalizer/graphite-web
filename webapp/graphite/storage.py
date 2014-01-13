@@ -12,7 +12,6 @@ from graphite.remote_storage import RemoteStore
 from graphite.node import LeafNode
 from graphite.intervals import Interval, IntervalSet
 from graphite.readers import MultiReader
-<<<<<<< HEAD
 
 
 def get_finder(finder_path):
