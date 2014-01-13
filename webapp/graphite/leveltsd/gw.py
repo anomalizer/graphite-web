@@ -1,4 +1,6 @@
 import fnmatch
+from django.conf import settings
+
 from graphite.node import BranchNode, LeafNode
 from graphite.intervals import Interval, IntervalSet
 
@@ -7,9 +9,9 @@ import jsonrpclib
 
 
 class LevelRpcFinder(object):
-    def __init__(self, server_path, go_mode):
-        self.server = server_path
-        self.go_mode = go_mode
+    def __init__(self, server_path=None, go_mode=None):
+        self.server = server_path or settings.LEVEL_RPC_PATH
+        self.go_mode = go_mode or getattr(settings, 'LEVEL_GO_MODE', False)
 
     def find_nodes(self, query):
         #TODO: not ignore time components
